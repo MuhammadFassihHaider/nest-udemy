@@ -21,9 +21,11 @@ export class EventsController {
   create(@Body() createEventDto: CreateEventDto) {
     const eventToAdd: Event = {
       ...createEventDto,
-      id: this.events[this.events.length - 1]?.id ? this.events[this.events.length - 1]?.id  + 1 : 1,
-      when: new Date(createEventDto.when)
-    }
+      id: this.events[this.events.length - 1]?.id
+        ? this.events[this.events.length - 1]?.id + 1
+        : 1,
+      when: new Date(createEventDto.when),
+    };
     this.events = [...this.events, eventToAdd];
     return this.events;
   }
@@ -40,15 +42,17 @@ export class EventsController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
-    const eventToUpdate = this.events.find(event => event.id === +id);
-    if(eventToUpdate) {
+    const eventToUpdate = this.events.find((event) => event.id === +id);
+    if (eventToUpdate) {
       const updatedEvent = {
         ...eventToUpdate,
         ...updateEventDto,
-        when: eventToUpdate.when ? new Date(eventToUpdate.when) : eventToUpdate.when
-      }
-      this.events[this.events.findIndex(e => e.id === +id)] = updatedEvent
-      return updatedEvent
+        when: eventToUpdate.when
+          ? new Date(eventToUpdate.when)
+          : eventToUpdate.when,
+      };
+      this.events[this.events.findIndex((e) => e.id === +id)] = updatedEvent;
+      return updatedEvent;
     }
   }
 

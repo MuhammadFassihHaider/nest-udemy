@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   ParseIntPipe,
   Patch,
@@ -23,7 +24,6 @@ export class EventsController {
 
   @Post()
   async create(@Body() createEventDto: CreateEventDto) {
-    console.log(createEventDto, 'here');
     return await this.repository.save({
       ...createEventDto,
       when: new Date(createEventDto.when),
@@ -48,7 +48,6 @@ export class EventsController {
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    console.log(typeof id);
     return this.repository.findOneOrFail(id);
   }
 
@@ -59,7 +58,7 @@ export class EventsController {
   ) {
     const eventToUpdate = await this.repository.findOne(+id);
     if (!eventToUpdate) {
-      throw Error('Could not find event to update!');
+      throw new NotFoundException();
     }
     if (eventToUpdate) {
       return this.repository.save({
@@ -75,7 +74,9 @@ export class EventsController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     const eventToDelete = await this.repository.findOne(+id);
-
+    if (!eventToDelete) {
+      throw new NotFoundException();
+    }
     if (eventToDelete) {
       return this.repository.remove(eventToDelete);
     }

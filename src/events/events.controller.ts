@@ -1,13 +1,15 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
 } from '@nestjs/common';
-import { EventsService } from './events.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { Event } from './entities/event.entity';
@@ -15,50 +17,67 @@ import { Event } from './entities/event.entity';
 @Controller('/events')
 export class EventsController {
   private events: Event[] = [];
-  constructor(private readonly eventsService: EventsService) {}
+  constructor(
+    @InjectRepository(Event) private readonly repository: Repository<Event>,
+  ) {}
 
   @Post()
-  create(@Body() createEventDto: CreateEventDto) {
-    const eventToAdd: Event = {
+  async create(@Body() createEventDto: CreateEventDto) {
+    console.log(createEventDto, 'here');
+    return await this.repository.save({
       ...createEventDto,
-      id: this.events[this.events.length - 1]?.id
-        ? this.events[this.events.length - 1]?.id + 1
-        : 1,
       when: new Date(createEventDto.when),
-    };
-    this.events = [...this.events, eventToAdd];
-    return this.events;
+    });
   }
 
   @Get()
-  findAll() {
-    return this.events;
+  async findAll() {
+    return this.repository.find();
   }
 
+  // @Get('practice')
+  // async practice() {
+  //   return await this.repository.find({
+  //     select: ['name', 'address', 'id'],
+
+  //     where: {
+  //       id: MoreThan(2),
+  //     },
+  //   });
+  // }
+
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.events.find((event) => event.id === +id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    console.log(typeof id);
+    return this.repository.findOneOrFail(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
-    const eventToUpdate = this.events.find((event) => event.id === +id);
+  async update(
+    @Param('id') id: string,
+    @Body() updateEventDto: UpdateEventDto,
+  ) {
+    const eventToUpdate = await this.repository.findOne(+id);
+    if (!eventToUpdate) {
+      throw Error('Could not find event to update!');
+    }
     if (eventToUpdate) {
-      const updatedEvent = {
+      return this.repository.save({
         ...eventToUpdate,
         ...updateEventDto,
         when: eventToUpdate.when
           ? new Date(eventToUpdate.when)
           : eventToUpdate.when,
-      };
-      this.events[this.events.findIndex((e) => e.id === +id)] = updatedEvent;
-      return updatedEvent;
+      });
     }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    this.events = this.events.filter((event) => event.id !== +id);
-    return this.events;
+  async remove(@Param('id') id: string) {
+    const eventToDelete = await this.repository.findOne(+id);
+
+    if (eventToDelete) {
+      return this.repository.remove(eventToDelete);
+    }
   }
 }

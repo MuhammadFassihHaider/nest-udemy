@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { Event } from './events/entities/event.entity';
 import { EventsModule } from './events/events.module';
 
 const config: PostgresConnectionOptions = {
@@ -12,6 +13,8 @@ const config: PostgresConnectionOptions = {
   port: 5432,
   username: 'postgres',
   database: 'nest-ude',
+  entities: [Event],
+  synchronize: true,
 };
 
 @Module({

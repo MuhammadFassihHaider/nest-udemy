@@ -17,7 +17,6 @@ import { Event } from './entities/event.entity';
 
 @Controller('/events')
 export class EventsController {
-  private events: Event[] = [];
   constructor(
     @InjectRepository(Event) private readonly repository: Repository<Event>,
   ) {}
@@ -45,6 +44,19 @@ export class EventsController {
   //     },
   //   });
   // }
+
+  @Get('practice/:id')
+  async practice(@Param('id', ParseIntPipe) id: number) {
+    const event = await this.repository.findOne(id, {
+      relations: ['attendee'],
+    });
+
+    if (!event) {
+      throw new NotFoundException();
+    }
+
+    return event;
+  }
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {

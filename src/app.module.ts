@@ -8,6 +8,7 @@ import ormConfigProd from './config/orm.config.prod';
 import { EventsModule } from './events/events.module';
 import { AttendeesModule } from './attendees/attendees.module';
 import { SchoolModule } from './school/school.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { SchoolModule } from './school/school.module';
     EventsModule,
     AttendeesModule,
     SchoolModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

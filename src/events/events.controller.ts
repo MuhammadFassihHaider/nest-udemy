@@ -14,24 +14,20 @@ import { Repository } from 'typeorm';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { Event } from './entities/event.entity';
+import { EventsService } from './events.service';
 
 @Controller('/events')
 export class EventsController {
-  constructor(
-    @InjectRepository(Event) private readonly repository: Repository<Event>,
-  ) {}
+  constructor(private readonly eventsService: EventsService) {}
 
   @Post()
   async create(@Body() createEventDto: CreateEventDto) {
-    return await this.repository.save({
-      ...createEventDto,
-      when: new Date(createEventDto.when),
-    });
+    return this.eventsService.create(createEventDto);
   }
 
   @Get()
   async findAll() {
-    return this.repository.find();
+    return this.eventsService.findAll();
   }
 
   // @Get('practice')
@@ -45,52 +41,49 @@ export class EventsController {
   //   });
   // }
 
-  @Get('practice/:id')
-  async practice(@Param('id', ParseIntPipe) id: number) {
-    const event = await this.repository.findOne(id, {
-      relations: ['attendee'],
-    });
+  // @Get('practice/:id')
+  // async practice(@Param('id', ParseIntPipe) id: number) {
+  //   const event = await this.repository.findOne(id, {
+  //     relations: ['attendee'],
+  //   });
 
-    if (!event) {
-      throw new NotFoundException();
-    }
+  //   if (!event) {
+  //     throw new NotFoundException();
+  //   }
 
-    return event;
-  }
+  //   return event;
+  // }
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.repository.findOneOrFail(id);
+    const foundResult = await this.eventsService.findOne(id);
+    if (!foundResult) {
+      throw new NotFoundException();
+    }
+    return foundResult;
   }
 
   @Patch(':id')
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateEventDto: UpdateEventDto,
   ) {
-    const eventToUpdate = await this.repository.findOne(+id);
-    if (!eventToUpdate) {
+    const updateResult = await this.eventsService.update(id, updateEventDto);
+    if (updateResult?.affected === 0) {
       throw new NotFoundException();
     }
-    if (eventToUpdate) {
-      return this.repository.save({
-        ...eventToUpdate,
-        ...updateEventDto,
-        when: eventToUpdate.when
-          ? new Date(eventToUpdate.when)
-          : eventToUpdate.when,
-      });
-    }
+
+    return updateResult;
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    const eventToDelete = await this.repository.findOne(+id);
-    if (!eventToDelete) {
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    const deleteResult = await this.eventsService.remove(id);
+
+    if (deleteResult?.affected === 0) {
       throw new NotFoundException();
     }
-    if (eventToDelete) {
-      return this.repository.remove(eventToDelete);
-    }
+
+    return deleteResult;
   }
 }

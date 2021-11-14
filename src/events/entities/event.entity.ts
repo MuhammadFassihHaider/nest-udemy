@@ -20,4 +20,14 @@ export class Event {
 
   @OneToMany(() => Attendee, (attendee) => attendee.event)
   attendee: Attendee[];
+
+  /**
+   * Does not have @Column() decorator
+   * It can be considered as a virtual column
+   * The data is not stored in the database
+   */
+  attendeeCount?: number;
+  attendeeAccepted?: number;
+  attendeeMaybe?: number;
+  attendeeRejected?: number;
 }

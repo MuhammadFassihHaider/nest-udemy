@@ -7,6 +7,12 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
+export enum EAttendeeStatus {
+  Accepted = 1,
+  Maybe,
+  Rejected,
+}
+
 @Entity()
 export class Attendee {
   @PrimaryGeneratedColumn()
@@ -22,4 +28,10 @@ export class Attendee {
     name: 'eventid',
   })
   event: Event;
+
+  @Column('enum', {
+    enum: EAttendeeStatus,
+    default: EAttendeeStatus.Accepted,
+  })
+  attendingStatus?: EAttendeeStatus;
 }

@@ -4,7 +4,7 @@ import { Strategy } from 'passport-local';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-
+import * as bcrypt from 'bcrypt';
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy, 'my strategy') {
   constructor(
@@ -13,7 +13,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'my strategy') {
     super();
   }
 
-  public async validate(username: string, password: string): Promise<any> {
+  async validate(username: string, password: string): Promise<any> {
     const user = await this.userRepository
       .createQueryBuilder('user')
       .select()
@@ -24,7 +24,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'my strategy') {
       throw new UnauthorizedException();
     }
 
-    if (user.password !== password) {
+    if (!(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException('Invalid credentials');
     }
 

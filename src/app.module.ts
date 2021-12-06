@@ -24,7 +24,6 @@ import { AuthModule } from './auth/auth.module';
     SchoolModule,
     AuthModule,
   ],
-  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}

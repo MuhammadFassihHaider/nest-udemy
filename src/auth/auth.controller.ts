@@ -1,7 +1,9 @@
-import { Controller, Get, Logger, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { UserRequest } from './dto/types';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { CreateAuthDto } from './dto/create-auth.dto';
+import { User } from './entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -10,8 +12,7 @@ export class AuthController {
 
   @Post('login')
   @UseGuards(AuthGuard('my strategy'))
-  async login(@Req() request: UserRequest) {
-    const { user } = request;
+  async login(@CurrentUser() user: User) {
     const token = this.authService.getTokenForUser(user);
     return {
       user: user.id,
@@ -21,7 +22,13 @@ export class AuthController {
 
   @Get('profile')
   @UseGuards(AuthGuard('jwt-strategy'))
-  async profile(@Req() request: UserRequest) {
-    return request.user;
+  async profile(@CurrentUser() user: User) {
+    return user;
+  }
+
+  @Post('register')
+  async register(@Body() createAuthDto: CreateAuthDto) {
+    console.log(createAuthDto);
+    return await this.authService.registerNewUser(createAuthDto);
   }
 }
